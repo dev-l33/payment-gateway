@@ -19,8 +19,6 @@ module.exports = {
 
     let account = web3.eth.accounts.create();
 
-    sails.log.info(`Accout is created public key: ${account.address}, privateKey: ${account.privateKey}`);
-
     return exits.success(account);
   }
 

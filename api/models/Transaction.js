@@ -13,6 +13,7 @@ module.exports = {
     //  ╠═╝╠╦╝║║║║║ ║ ║╚╗╔╝║╣ ╚═╗
     //  ╩  ╩╚═╩╩ ╩╩ ╩ ╩ ╚╝ ╚═╝╚═╝
     value: { type: 'number', required: true},
+    valuePaid: { type: 'number', defaultsTo: 0},
     timeoutInSecs: { type: 'number', required: true },
     callbackUrl: { type: 'string', required:false },
     transactionHash: { type: 'string', required:false },

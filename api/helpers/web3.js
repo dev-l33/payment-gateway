@@ -1,6 +1,7 @@
 var Web3 = require('web3');
 
-var web3 = new Web3(new Web3.providers.HttpProvider(sails.config.ethereum.node));
+// var web3 = new Web3(new Web3.providers.HttpProvider(sails.config.ethereum.node));
+var web3 = new Web3(new Web3.providers.WebsocketProvider(sails.config.ethereum.node));
 
 web3.eth.getCoinbase().then(sails.log.info);
 

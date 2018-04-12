@@ -43,10 +43,14 @@ module.exports = {
       privateKey: account.privateKey
     }).fetch();
 
+    sails.log.info(`Tx is created. id: ${transaction.id}, address: ${transaction.address}`);
+
     return exits.success({
       success:true,
       data: {
-        transactionId: transaction.id
+        transactionId: transaction.id,
+        address: transaction.address,
+        value: transaction.value
       }
     });
   }
