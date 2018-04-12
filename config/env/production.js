@@ -47,8 +47,8 @@ module.exports = {
     *                                                                          *
     ***************************************************************************/
     default: {
-      // adapter: 'sails-mysql',
-      // url: 'mysql://user:password@host:port/database',
+      adapter: 'sails-mongo',
+      url: 'mongodb://payment_dbuser:QwerAsdf@ds141889.mlab.com:41889/worldbit-payment-gateway',
       //--------------------------------------------------------------------------
       //  /\   To avoid checking it in to version control, you might opt to set
       //  ||   sensitive credentials like `url` using an environment variable.
@@ -178,10 +178,10 @@ module.exports = {
     * > Be sure to use the right protocol!  ("http://" vs. "https://")         *
     *                                                                          *
     ***************************************************************************/
-    // onlyAllowOrigins: [
-    //   'https://example.com',
-    //   'https://staging.example.com',
-    // ],
+    onlyAllowOrigins: [
+      'https://example.com',
+      'https://staging.example.com',
+    ],
 
 
     /***************************************************************************
@@ -319,6 +319,12 @@ module.exports = {
 
   },
 
-
+  ethereum: {
+    // node: 'http://18.219.192.129:8544',
+    node: 'ws://18.219.192.129:8546',
+    coinbase: '0xbd900d44661e554a05415a43fd79025521a973a3',
+    gas: 21000,
+    gasPrice: 20000000000
+  },
 
 };
