@@ -28,6 +28,7 @@ module.exports.routes = {
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
   'POST /api/v1/transaction/create': { action: 'transaction/create' },
   'GET /api/v1/auth': { action: 'auth' },
+  'GET /api/v1/transaction/status/:transactionId': { action: 'transaction/status' },
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
