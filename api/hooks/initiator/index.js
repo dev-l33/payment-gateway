@@ -63,8 +63,7 @@ async function txListener(error, transactionHash) {
         transactionHash: ethTx.hash
       })
       .fetch();
-      setTimeout(confirmTx, 5000, tx[0]);
-      sails.log.debug(tx);
+      setTimeout(confirmTx, 10000, tx[0]);
     }
   }
 }
