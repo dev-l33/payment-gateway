@@ -49,7 +49,7 @@ async function txListener(error, transactionHash) {
   }
   let ethTx = await web3.eth.getTransaction(transactionHash);
   // ethTx.to = web3.utils.toChecksumAddress(ethTx.to);
-  if (ethTx.value) {
+  if (_.has(ethTx, 'value')) {
     let tx = await Transaction.findOne({
       address: ethTx.to,
       status: 0
