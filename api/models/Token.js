@@ -15,7 +15,7 @@ module.exports = {
     address: { type: 'string', required: true, unique: true },
     symbol: { type: 'string', required: true, unique: true },
     name: { type: 'string', required:true },
-    decimals: { type: 'integer', defaultsTo: 18 }
+    decimals: { type: 'number', defaultsTo: 18 }
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
