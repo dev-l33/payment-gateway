@@ -321,9 +321,10 @@ module.exports = {
 
   ethereum: {
     // node: 'http://18.219.192.129:8544',
-    node: 'ws://18.219.192.129:8546',
+    node: 'ws://18.219.192.129:18546',
     coinbase: '0xbd900d44661e554a05415a43fd79025521a973a3',
     gas: 21000,
+    tokenGas: 150000,
     gasPrice: 20000000000
   },
 
