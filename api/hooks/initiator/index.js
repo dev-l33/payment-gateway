@@ -27,6 +27,10 @@ module.exports = function defineInitiatorHook(sails) {
 
         web3.eth.subscribe('pendingTransactions', txListener);
 
+        // listen ERC20 transfer event
+        web3.eth.subscribe('logs', { topics: [ '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' ]})
+        .on('data', logListener);
+
         setTimeout(expireTransaction, 5000);
 
         return done();
@@ -68,12 +72,57 @@ async function txListener(error, transactionHash) {
   }
 }
 
+async function logListener(log) {
+  if (log.topics.length === 3) {
+    let toAddress = web3.utils.toChecksumAddress('0x' + log.topics[2].slice(-40));
+    let transaction = await Transaction.findOne({ address: toAddress, status: 0 }).populate('token');
+
+    if (transaction) {
+      sails.log.info('Token Transaction is detected: ', log.transactionHash);
+      let fromAddress = '0x' + log.topics[1].slice(-40);
+      let value = web3.utils.fromWei(web3.utils.hexToNumberString(log.data), 'ether');
+      let balance = transaction.valuePaid + value;
+
+      tx = await Transaction.update({
+        id: transaction.id
+      })
+      .set({
+        fromAddress: fromAddress,
+        valuePaid: balance,
+        status: balance >= transaction.value,
+        transactionHash: log.transactionHash
+      })
+      .fetch();
+
+      if (tx[0].status) {
+        let gasLimit = await sails.helpers.tokenContract(transaction.token.address).methods.transfer(sails.config.ethereum.coinbase, tx[0].valuePaid).estimateGas({ from: transaction.address, gas: sails.config.ethereum.tokenGas });
+        gasLimit = parseInt(gasLimit * 1.5);
+        let gasPrice = await web3.eth.getGasPrice();
+        let txFee = gasLimit * gasPrice;
+
+        let hash = await sails.helpers.sendEtherFromAccount(sails.config.ethereum.coinbase, tx[0].address, txFee);
+
+        tx = await Transaction.update({
+          id: transaction.id
+        })
+        .set({
+          feeTransactionHash: hash,
+        })
+        .fetch();
+
+        setTimeout(forwardToken, 300000, tx[0], gasPrice, gasLimit);
+
+      }
+    }
+  }
+}
+
 /**
- * confirming pending transaction.
+ * confirming pending transaction(for ether payment option).
  * @param Transaction transaction Transaction model object
  */
 async function confirmTx(transaction) {
-  sails.log.info('Checking Transaction: ' + transaction.transactionHash);
+  sails.log.info('Confirm Pending ETH Transaction: ' + transaction.transactionHash);
   let ethTx = await web3.eth.getTransaction(transaction.transactionHash);
   if (ethTx.blockNumber) {
     let balance = await web3.eth.getBalance(transaction.address);
@@ -88,7 +137,13 @@ async function confirmTx(transaction) {
     .fetch();
     if (tx[0].status) {
       let hash = await sails.helpers.sendEther(tx[0].privateKey, sails.config.ethereum.coinbase, balance);
-      sails.log.info(`Transaction is completed txId: ${tx[0].id} hash: ${hash}`);
+      await Transaction.update({
+        id: transaction.id
+      })
+      .set({
+        forwardTransactionHash: hash
+      });
+      sails.log.info(`Forward ETH Transaction is done. txId: ${tx[0].id} hash: ${hash}`);
 
       if (tx[0].callbackUrl) {
         try {
@@ -116,7 +171,23 @@ async function confirmTx(transaction) {
   }
 }
 
+async function forwardToken(transaction, gasPrice, gasLimit) {
+  let token = await Token.findOne({ id: transaction.token});
+  let hash = await sails.helpers.sendToken(token, transaction.privateKey, transaction.address, transaction.valuePaid, gasPrice, gasLimit);
 
+  await Transaction.update({
+    id: transaction.id
+  })
+  .set({
+    forwardTransactionHash: hash
+  });
+  sails.log.info(`Forward Token Transaction is done. txId: ${transaction.id} hash: ${hash}`);
+}
+
+/**
+ * check and flag expired transaction.
+ * Call callback with timeout flag.
+ */
 async function expireTransaction() {
   let txs = await Transaction.find({
     status: 0,

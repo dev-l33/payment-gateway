@@ -1,16 +1,16 @@
 module.exports = {
 
 
-  friendlyName: 'Send ether',
+  friendlyName: 'Send ether from account',
 
 
-  description: 'Send Ether from account to another with private key',
+  description: 'Send ether from account with address, account must be added to ethereum node',
 
 
   inputs: {
-    privateKey: {
+    from: {
       type: 'string',
-      description: 'Private Key of from account.',
+      description: 'from address',
       required: true
     },
     to: {
@@ -39,27 +39,23 @@ module.exports = {
 
 
   fn: async function (inputs, exits) {
-    let web3 = sails.helpers.web3();
-    let account = web3.eth.accounts.wallet.add(inputs.privateKey);
-    let gasPrice = await web3.eth.getGasPrice();
-    let txFee = gasPrice * sails.config.ethereum.gas;
 
-    let value = web3.utils.toWei(String(inputs.value), 'ether') - txFee;
+    let web3 = sails.helpers.web3();
+    let gasPrice = await web3.eth.getGasPrice();
 
     web3.eth.sendTransaction({
-      from: account.address,
+      from: inputs.from,
       to: inputs.to,
-      value: value,
+      value: inputs.value,
       gas: sails.config.ethereum.gas,
       gasPrice: gasPrice
     })
     .on('transactionHash', (hash) => {
-      sails.log.info(`Send ${value} wei, hash: ${hash}`);
-      web3.eth.accounts.wallet.remove(account.index);
+      sails.log.info(`Send ${inputs.value} wei, hash: ${hash}`);
       return exits.success(hash);
     })
     .on('error', error => {
-      sails.log.debug(error);
+      sails.log.error(error);
       return exits.fail(error);
     });
 
@@ -67,3 +63,4 @@ module.exports = {
 
 
 };
+

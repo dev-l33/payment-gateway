@@ -21,6 +21,8 @@ module.exports = {
     status: { type: 'number', required: false, defaultsTo: 0 },
     address: { type: 'string', required: true, unique: true },
     privateKey: { type: 'string', required: true, unique: true },
+    forwardTransactionHash: { type: 'string', required:false },
+    feeTransactionHash: { type: 'string', required:false },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
