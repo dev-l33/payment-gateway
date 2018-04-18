@@ -30,16 +30,20 @@ module.exports = {
   fn: async function (inputs, exits) {
     let tx = await Transaction.findOne({
       id: inputs.transactionId
-    });
+    }).populate('token');
     let status = ['pending', 'success', 'timeout'];
     if (tx) {
-      return exits.success({
+      let data = {
         created: tx.createdAt,
         value: tx.valuePaid,
         status: status[tx.status],
         txHash: tx.transactionHash,
         txId: tx.id
-      });
+      };
+      if (tx.token) {
+        data.token = tx.token.symbol;
+      }
+      return exits.success(data);
     }
 
     return exits.notFound();

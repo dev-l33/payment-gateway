@@ -173,7 +173,7 @@ async function confirmTx(transaction) {
 
 async function forwardToken(transaction, gasPrice, gasLimit) {
   let token = await Token.findOne({ id: transaction.token});
-  let hash = await sails.helpers.sendToken(token, transaction.privateKey, transaction.address, transaction.valuePaid, gasPrice, gasLimit);
+  let hash = await sails.helpers.sendToken(token, transaction.privateKey, sails.config.ethereum.coinbase, transaction.valuePaid, gasPrice, gasLimit);
 
   await Transaction.update({
     id: transaction.id
