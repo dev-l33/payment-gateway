@@ -8,6 +8,10 @@ module.exports = {
 
 
   inputs: {
+    token: {
+      description: 'Token symbol which is being used for the transaction (Default null, Ethereum will be used)',
+      type: 'string'
+    },
     value: {
       description: 'The value of the transaction (in Ether) that gateway should watch for (we do a >= check on this, so it won’t matter if the customer sends more)',
       type: 'number',
@@ -28,6 +32,10 @@ module.exports = {
     success: {
       description: 'transaction is created successfully.'
     },
+    invalidInput: {
+      statusCode: 406,
+      description: 'Input invalid'
+    }
   },
 
 
@@ -35,23 +43,43 @@ module.exports = {
 
     let account = await sails.helpers.createEthAccount();
 
-    let transaction = await Transaction.create({
+    let txData = {
       value: inputs.value,
       timeoutInSecs: inputs.timeoutInSecs,
       callbackUrl: inputs.callbackUrl,
       address: account.address,
       privateKey: account.privateKey
-    }).fetch();
+    };
 
-    sails.log.info(`Tx is created. id: ${transaction.id}, address: ${transaction.address}`);
+    if (_.has(inputs, 'token')) {
+      let token = await Token.findOne({ symbol: inputs.token });
+      if (token) {
+        txData.token = token.id;
+      } else {
+        return exits.invalidInput({
+          success: false,
+          error: 'invalid token'
+        });
+      }
+    }
+
+    let transaction = await Transaction.create(txData).fetch();
+
+    sails.log.info(`Tx created. id: ${transaction.id}, address: ${transaction.address}`);
+
+    let resultData = {
+      transactionId: transaction.id,
+      address: transaction.address,
+      value: transaction.value
+    };
+
+    if (transaction.token) {
+      resultData.token = inputs.token;
+    }
 
     return exits.success({
       success:true,
-      data: {
-        transactionId: transaction.id,
-        address: transaction.address,
-        value: transaction.value
-      }
+      data: resultData
     });
   }
 
